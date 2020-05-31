@@ -33,3 +33,9 @@ build/
 # system ignore
 .DS_Store
 Thumbs.db
+
+**/mvnw
+**/mvnw.cmd
+
+**/.mvn
+**/target
