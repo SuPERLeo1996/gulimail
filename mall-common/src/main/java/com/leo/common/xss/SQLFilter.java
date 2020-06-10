@@ -6,9 +6,10 @@
  * 版权所有，侵权必究！
  */
 
-package com.leo.common.utils;
+package com.leo.common.xss;
 
-import org.apache.commons.lang3.StringUtils;
+import com.leo.common.utils.RRException;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * SQL过滤
