@@ -1,20 +1,14 @@
 package com.leo.mall.member.controller;
 
-import java.util.Arrays;
-import java.util.Map;
-
-import com.leo.mall.member.feign.CouponFeignService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.leo.mall.member.entity.MemberEntity;
-import com.leo.mall.member.service.MemberService;
 import com.leo.common.utils.PageUtils;
 import com.leo.common.utils.R;
+import com.leo.mall.member.entity.MemberEntity;
+import com.leo.mall.member.service.MemberService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.Map;
 
 
 
@@ -30,17 +24,6 @@ import com.leo.common.utils.R;
 public class MemberController {
     @Autowired
     private MemberService memberService;
-    @Autowired
-    private CouponFeignService couponFeignService;
-
-    @RequestMapping("/coupons")
-    public R test() {
-        MemberEntity memberEntity = new MemberEntity();
-        memberEntity.setNickname("张三");
-        R memberCoupons = couponFeignService.memberCoupons();
-
-        return R.ok().put("member",memberEntity).put("coupons",memberCoupons.get("coupons"));
-    }
 
     /**
      * 列表
