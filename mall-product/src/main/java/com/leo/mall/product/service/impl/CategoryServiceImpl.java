@@ -44,12 +44,12 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
                     return menu1.getSort() - menu2.getSort();
                 }).collect(Collectors.toList());
 
-        return entities;
+        return level1Menus;
     }
 
     private List<CategoryEntity> getChildren(CategoryEntity root, List<CategoryEntity> all) {
         List<CategoryEntity> children = all.stream().filter(categoryEntity -> {
-            return categoryEntity.getParentCid() == root.getParentCid();
+            return categoryEntity.getParentCid() == root.getCatId();
         }).map(categoryEntity -> {
             categoryEntity.setChildren(getChildren(categoryEntity, all));
             return categoryEntity;
