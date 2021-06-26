@@ -2,12 +2,19 @@ package com.leo.mall.product.controller;
 
 import com.leo.common.utils.PageUtils;
 import com.leo.common.utils.R;
+import com.leo.common.valid.AddGroup;
+import com.leo.common.valid.UpdateGroup;
+import com.leo.common.valid.UpdateStatusGroup;
 import com.leo.mall.product.entity.BrandEntity;
 import com.leo.mall.product.service.BrandService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -49,8 +56,19 @@ public class BrandController {
      * 保存
      */
     @RequestMapping("/save")
-    public R save(@RequestBody BrandEntity brand){
-		brandService.save(brand);
+    public R save(@Validated({AddGroup.class}) @RequestBody BrandEntity brand){
+//        if (bindingResult.hasErrors()) {
+//            Map<String,String> map = new HashMap<>();
+//            bindingResult.getFieldErrors().forEach(item -> {
+//                String message = item.getDefaultMessage();
+//                String field = item.getField();
+//                map.put(field,message);
+//            });
+//            R.error(400,"提交的数据不合法").put("data",map);
+//        } else {
+//
+//        }
+        brandService.save(brand);
 
         return R.ok();
     }
@@ -59,8 +77,18 @@ public class BrandController {
      * 修改
      */
     @RequestMapping("/update")
-    public R update(@RequestBody BrandEntity brand){
-		brandService.updateById(brand);
+    public R update(@Validated({UpdateGroup.class}) @RequestBody BrandEntity brand){
+		brandService.updateDetail(brand);
+
+        return R.ok();
+    }
+
+    /**
+     * 修改
+     */
+    @RequestMapping("/update/status")
+    public R updateStatus(@Validated({UpdateStatusGroup.class}) @RequestBody BrandEntity brand){
+        brandService.updateById(brand);
 
         return R.ok();
     }
