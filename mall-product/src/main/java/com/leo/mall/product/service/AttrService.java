@@ -3,9 +3,11 @@ package com.leo.mall.product.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.leo.common.utils.PageUtils;
 import com.leo.mall.product.entity.AttrEntity;
+import com.leo.mall.product.vo.AttrGroupRelationVO;
 import com.leo.mall.product.vo.AttrRespVO;
 import com.leo.mall.product.vo.AttrVO;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,5 +28,11 @@ public interface AttrService extends IService<AttrEntity> {
     AttrRespVO getAttrInfo(Long attrId);
 
     void updateAttr(AttrVO attr);
+
+    List<AttrEntity> getRelationAttr(Long attrGroupId);
+
+    void deleteRelation(AttrGroupRelationVO[] vos);
+
+    PageUtils getNoRelationAttr(Map<String, Object> params, Long attrGroupId);
 }
 
