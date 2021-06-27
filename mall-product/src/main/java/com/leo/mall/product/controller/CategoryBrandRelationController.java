@@ -3,14 +3,17 @@ package com.leo.mall.product.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.leo.common.utils.PageUtils;
 import com.leo.common.utils.R;
+import com.leo.mall.product.entity.BrandEntity;
 import com.leo.mall.product.entity.CategoryBrandRelationEntity;
 import com.leo.mall.product.service.CategoryBrandRelationService;
+import com.leo.mall.product.vo.BrandVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 /**
@@ -41,6 +44,22 @@ public class CategoryBrandRelationController {
         List<CategoryBrandRelationEntity> data = categoryBrandRelationService.list(
                 new QueryWrapper<CategoryBrandRelationEntity>().eq("brand_id",brandId));
         return R.ok().put("data", data);
+    }
+
+    @GetMapping("/brands/list")
+    public R relationBrandList(@RequestParam("catId") Long catId){
+
+        List<BrandEntity> entities =  categoryBrandRelationService.getBrandsByCatId(catId);
+
+        List<BrandVO> collect = entities.stream().map(e -> {
+            BrandVO brandVO = new BrandVO();
+            brandVO.setBrandId(e.getBrandId());
+            brandVO.setBrandName(e.getName());
+            return brandVO;
+        }).collect(Collectors.toList());
+
+
+        return R.ok().put("data", collect);
     }
 
 
