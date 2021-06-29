@@ -5,9 +5,7 @@ import com.leo.common.constant.ProductConstant;
 import com.leo.mall.product.dao.AttrAttrgroupRelationDao;
 import com.leo.mall.product.dao.AttrGroupDao;
 import com.leo.mall.product.dao.CategoryDao;
-import com.leo.mall.product.entity.AttrAttrgroupRelationEntity;
-import com.leo.mall.product.entity.AttrGroupEntity;
-import com.leo.mall.product.entity.CategoryEntity;
+import com.leo.mall.product.entity.*;
 import com.leo.mall.product.service.CategoryService;
 import com.leo.mall.product.vo.AttrGroupRelationVO;
 import com.leo.mall.product.vo.AttrRespVO;
@@ -29,7 +27,6 @@ import com.leo.common.utils.PageUtils;
 import com.leo.common.utils.Query;
 
 import com.leo.mall.product.dao.AttrDao;
-import com.leo.mall.product.entity.AttrEntity;
 import com.leo.mall.product.service.AttrService;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;

@@ -44,9 +44,9 @@ public class SpuInfoController {
     /**
      * 信息
      */
-    @RequestMapping("/info/{id}")
-    public R info(@PathVariable("id") Long id){
-		SpuInfoEntity spuInfo = spuInfoService.getById(id);
+    @RequestMapping("/info/{skuId}")
+    public R info(@PathVariable("skuId") Long skuId){
+		SpuInfoEntity spuInfo = spuInfoService.getById(skuId);
 
         return R.ok().put("spuInfo", spuInfo);
     }

@@ -3,13 +3,16 @@ package com.leo.mall.product.controller;
 import com.leo.common.utils.PageUtils;
 import com.leo.common.utils.R;
 import com.leo.mall.product.entity.AttrEntity;
+import com.leo.mall.product.entity.ProductAttrValueEntity;
 import com.leo.mall.product.service.AttrService;
+import com.leo.mall.product.service.ProductAttrValueService;
 import com.leo.mall.product.vo.AttrRespVO;
 import com.leo.mall.product.vo.AttrVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 
@@ -25,6 +28,17 @@ import java.util.Map;
 public class AttrController {
     @Autowired
     private AttrService attrService;
+    @Autowired
+    private ProductAttrValueService productAttrValueService;
+
+
+    @GetMapping("/base/listforspu/{spuId}")
+    public R baseAttrList(@PathVariable("spuId") Long spuId){
+        List<ProductAttrValueEntity> entities = productAttrValueService.baseAttrListForSpu(spuId);
+        return R.ok().put("data", entities);
+    }
+
+
 
     @GetMapping("/{attrType}/list/{catelogId}")
     public R baseAttrList(@RequestParam Map<String, Object> params,
@@ -77,6 +91,16 @@ public class AttrController {
     @RequestMapping("/update")
     public R update(@RequestBody AttrVO attr){
 		attrService.updateAttr(attr);
+        return R.ok();
+    }
+
+    /**
+     * 修改
+     */
+    @RequestMapping("/update/{spuId}")
+    public R updateSpuAttr(@PathVariable("spuId") Long spuId,
+                           @RequestBody List<ProductAttrValueEntity> entities){
+        productAttrValueService.updateSpuAttr(spuId,entities);
         return R.ok();
     }
 

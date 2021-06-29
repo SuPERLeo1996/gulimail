@@ -3,6 +3,7 @@ package com.leo.mall.product.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.leo.common.utils.PageUtils;
 import com.leo.mall.product.entity.AttrEntity;
+import com.leo.mall.product.entity.ProductAttrValueEntity;
 import com.leo.mall.product.vo.AttrGroupRelationVO;
 import com.leo.mall.product.vo.AttrRespVO;
 import com.leo.mall.product.vo.AttrVO;
