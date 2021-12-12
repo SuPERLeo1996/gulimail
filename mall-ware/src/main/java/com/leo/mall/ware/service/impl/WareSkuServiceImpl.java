@@ -1,5 +1,6 @@
 package com.leo.mall.ware.service.impl;
 
+import com.leo.common.to.SkuHasStockVO;
 import com.leo.common.utils.R;
 import com.leo.mall.ware.feign.ProductFeignService;
 import org.apache.commons.lang.StringUtils;
@@ -8,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -70,6 +73,17 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
         }
 
 
+    }
+
+    @Override
+    public List<SkuHasStockVO> getSkusHasStock(List<Long> skuIds) {
+        return skuIds.stream().map(e -> {
+            SkuHasStockVO skuHasStockVO = new SkuHasStockVO();
+            Long count = baseMapper.getSkuStock(e);
+            skuHasStockVO.setSkuId(e);
+            skuHasStockVO.setHasStock(count != null && count > 0);
+            return skuHasStockVO;
+        }).collect(Collectors.toList());
     }
 
 }

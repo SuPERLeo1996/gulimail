@@ -1,10 +1,15 @@
 package com.leo.mall.product.service.impl;
 
+import com.leo.common.constant.ProductConstant;
+import com.leo.common.to.SkuHasStockVO;
 import com.leo.common.to.SkuReductionTO;
 import com.leo.common.to.SpuBoundTO;
+import com.leo.common.to.es.SkuEsModel;
 import com.leo.common.utils.R;
 import com.leo.mall.product.entity.*;
 import com.leo.mall.product.feign.CouponFeignService;
+import com.leo.mall.product.feign.SearchFeignService;
+import com.leo.mall.product.feign.WareFeignService;
 import com.leo.mall.product.service.*;
 import com.leo.mall.product.vo.*;
 import org.springframework.beans.BeanUtils;
@@ -12,9 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -55,6 +58,19 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
     @Autowired
     private CouponFeignService couponFeignService;
+
+    @Autowired
+    private BrandService brandService;
+
+    @Autowired
+    private CategoryService categoryService;
+
+    @Autowired
+    private WareFeignService wareFeignService;
+
+    @Autowired
+    private SearchFeignService searchFeignService;
+
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -101,7 +117,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
         Bounds bounds = vo.getBounds();
         SpuBoundTO spuBoundTO = new SpuBoundTO();
-        BeanUtils.copyProperties(bounds,spuBoundTO);
+        BeanUtils.copyProperties(bounds, spuBoundTO);
         spuBoundTO.setSpuId(infoEntity.getId());
         R r = couponFeignService.saveSpuBounds(spuBoundTO);
 
@@ -151,7 +167,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                 skuSaleAttrValueService.saveBatch(skuSaleAttrValueEntities);
 
                 SkuReductionTO skuReductionTO = new SkuReductionTO();
-                BeanUtils.copyProperties(e,skuReductionTO);
+                BeanUtils.copyProperties(e, skuReductionTO);
                 skuReductionTO.setSkuId(skuId);
                 if (skuReductionTO.getFullCount() > 0 || skuReductionTO.getFullPrice().compareTo(BigDecimal.ZERO) > 0) {
                     R r1 = couponFeignService.saveSkuReduction(skuReductionTO);
@@ -177,27 +193,85 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
         String key = (String) params.get("key");
         if (!StringUtils.isEmpty(key)) {
-            wrapper.and(w ->{
-                w.eq("id",key).or().like("spu_name",key);
+            wrapper.and(w -> {
+                w.eq("id", key).or().like("spu_name", key);
             });
         }
         String status = (String) params.get("status");
         if (!StringUtils.isEmpty(status)) {
-            wrapper.eq("publish_status",status);
+            wrapper.eq("publish_status", status);
         }
         String brandId = (String) params.get("brandId");
         if (!StringUtils.isEmpty(brandId) && !"0".equalsIgnoreCase(brandId)) {
-            wrapper.eq("brand_id",brandId);
+            wrapper.eq("brand_id", brandId);
 
         }
         String catalogId = (String) params.get("catelogId");
         if (!StringUtils.isEmpty(catalogId) && !"0".equalsIgnoreCase(catalogId)) {
-            wrapper.eq("catalog_id",catalogId);
+            wrapper.eq("catalog_id", catalogId);
         }
 
-        IPage<SpuInfoEntity> page = this.page(new Query<SpuInfoEntity>().getPage(params),wrapper);
+        IPage<SpuInfoEntity> page = this.page(new Query<SpuInfoEntity>().getPage(params), wrapper);
 
         return new PageUtils(page);
+    }
+
+    @Override
+    public void up(Long spuId) {
+
+        List<SkuInfoEntity> skus = skuInfoService.getSkusBySpuId(spuId);
+        List<Long> skuIds = skus.stream().map(SkuInfoEntity::getSkuId).collect(Collectors.toList());
+
+        List<ProductAttrValueEntity> baseAttrs = attrValueService.baseAttrListForSpu(spuId);
+        List<Long> attrIds = baseAttrs.stream().map(ProductAttrValueEntity::getAttrId).collect(Collectors.toList());
+        List<Long> searchAttrIds = attrService.selectSearchAttrs(attrIds);
+        Set<Long> idSet = new HashSet<>(searchAttrIds);
+        List<SkuEsModel.Attrs> attrsList = baseAttrs.stream().filter(e -> idSet.contains(e.getAttrId())).map(e -> {
+            SkuEsModel.Attrs attrs1 = new SkuEsModel.Attrs();
+            BeanUtils.copyProperties(e, attrs1);
+            return attrs1;
+        }).collect(Collectors.toList());
+        Map<Long, Boolean> stockMap = null;
+        try {
+            R<List<SkuHasStockVO>> skusHasStock = wareFeignService.getSkusHasStock(skuIds);
+            stockMap = skusHasStock.getData().stream().collect(Collectors.toMap(SkuHasStockVO::getSkuId, SkuHasStockVO::getHasStock));
+
+        } catch (Exception e) {
+            log.error("库存服务查询异常:原因{}", e);
+        }
+
+
+        Map<Long, Boolean> finalStockMap = stockMap;
+        List<SkuEsModel> upProducts = skus.stream().map(e -> {
+            SkuEsModel esModel = new SkuEsModel();
+            BeanUtils.copyProperties(e, esModel);
+            esModel.setSkuPrice(e.getPrice());
+            esModel.setSkuImg(e.getSkuDefaultImg());
+            if (finalStockMap == null) {
+                esModel.setHasStock(true);
+            } else {
+                esModel.setHasStock(finalStockMap.get(e.getSkuId()));
+            }
+
+            esModel.setHasScore(0L);
+            BrandEntity brand = brandService.getById(esModel.getBrandId());
+            esModel.setBrandName(brand.getName());
+            esModel.setBrandImg(brand.getLogo());
+
+            CategoryEntity category = categoryService.getById(esModel.getCatalogId());
+            esModel.setCatalogName(category.getName());
+            esModel.setAttrs(attrsList);
+
+            return esModel;
+        }).collect(Collectors.toList());
+
+        R r = searchFeignService.productStatusUp(upProducts);
+        if (r.getCode() == 0) {
+            baseMapper.updateSpuStatus(spuId, ProductConstant.StatusEnum.SPU_UP.getCode());
+        } else {
+
+        }
+
     }
 
 }
