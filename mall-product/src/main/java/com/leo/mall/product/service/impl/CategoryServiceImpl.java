@@ -1,6 +1,7 @@
 package com.leo.mall.product.service.impl;
 
 import com.leo.mall.product.service.CategoryBrandRelationService;
+import com.leo.mall.product.vo.Catelog2VO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -93,5 +94,36 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     public void updateCascade(CategoryEntity category) {
         this.updateById(category);
         categoryBrandRelationService.updateCategory(category.getCatId(),category.getName());
+    }
+
+    @Override
+    public List<CategoryEntity> getLeve1Categorys() {
+
+        return baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", 0));
+    }
+
+    @Override
+    public Map<String, List<Catelog2VO>> getCatalogJson() {
+        List<CategoryEntity> leve1Categorys = getLeve1Categorys();
+        Map<String, List<Catelog2VO>> parent_cid = leve1Categorys.stream().collect(Collectors.toMap(k -> k.getCatId().toString(), v -> {
+            List<CategoryEntity> categoryEntities = baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", v.getCatId()));
+            List<Catelog2VO> catelog2VOS = null;
+            if (categoryEntities != null) {
+                catelog2VOS = categoryEntities.stream().map(item -> {
+                    Catelog2VO catelog2VO = new Catelog2VO(v.getCatId().toString(), null, item.getCatId().toString(), item.getName());
+                    List<CategoryEntity> level3Catelog = baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", item.getCatId()));
+                    if (level3Catelog != null) {
+                        List<Catelog2VO.Catelog3VO> collect = level3Catelog.stream().map(e -> {
+                            Catelog2VO.Catelog3VO catelog3VO = new Catelog2VO.Catelog3VO(item.getCatId().toString(), e.getCatId().toString(), e.getName());
+                            return catelog3VO;
+                        }).collect(Collectors.toList());
+                        catelog2VO.setCatalog3List(collect);
+                    }
+                    return catelog2VO;
+                }).collect(Collectors.toList());
+            }
+            return catelog2VOS;
+        }));
+        return parent_cid;
     }
 }
