@@ -5,11 +5,15 @@ import com.leo.mall.product.entity.BrandEntity;
 import com.leo.mall.product.service.BrandService;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
+import java.util.UUID;
 
 
 @RunWith(SpringRunner.class)
@@ -18,6 +22,26 @@ class MallProductApplicationTests {
 
     @Autowired
     BrandService brandService;
+
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    RedissonClient redissonClient;
+
+    @Test
+    void redissonClient() {
+
+    }
+
+    @Test
+    void testRedisTemplate() {
+        ValueOperations<String, String> ops = stringRedisTemplate.opsForValue();
+        ops.set("hello","world_" + UUID.randomUUID().toString());
+
+        String hello = ops.get("hello");
+        System.out.println(hello);
+    }
 
     @Test
     void contextLoads() {

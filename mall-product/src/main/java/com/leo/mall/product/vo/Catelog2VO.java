@@ -4,12 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Catelog2VO {
+public class Catelog2VO implements Serializable {
     /**
      * 1级父分类id
      */
@@ -25,7 +26,7 @@ public class Catelog2VO {
     @NoArgsConstructor
     @AllArgsConstructor
     @Data
-    public static class Catelog3VO {
+    public static class Catelog3VO implements Serializable {
         private String catalog2Id;
         private String id;
         private String name;
